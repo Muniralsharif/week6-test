@@ -1,5 +1,10 @@
 const { readFile } = require('fs');
 const path = require('path');
+const getCities = require('/home/munir/Desktop/week6Exercise/week6-test/src/database/queries/getData.js')
+const postcities = require('/home/munir/Desktop/week6Exercise/week6-test/src/database/queries/postData.js')
+const {
+  parse
+} = require('querystring');
 
 
 const serverError = (err, response) => {
@@ -19,10 +24,39 @@ const homeHandler = response => {
 
 const getCitiesHandler = response => {
   // write your own function that gets data from your database and response with  the result
+  getCities((err, result) => {
+    if (err) {
+      return console.log(err)
+    }
+
+    let dynamicData = JSON.stringify(result)
+    response.writeHead(200, {
+      'content-type': 'application/json'
+    });
+    response.end(dynamicData)
+  });
 };
 
 const postCityHandler = (request,response) => {
   // write your code to get the data from html form, then insert the data into the database
+  let body = '';
+  request.on('data', chunk => {
+    body += chunk.toString(); // convert Buffer to string
+  });
+  request.on('end', () => {
+    const result = parse(body)
+    console.log("name", result.name, "country", result.country)
+    postcities(result, (err, data) => {
+
+      if (err) {
+        console.log("err", err);
+      } else {
+        console.log(data);
+        response.end();
+      }
+    })
+    
+  })
 };
 
 const publicHandler = (url, response) => {
